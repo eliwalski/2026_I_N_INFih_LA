@@ -20,12 +20,16 @@ jobs:
           command: make lint
       - run:
           name: Build i push obrazu z tagiem SHA
+          # Zmienna z linii poleceń nadpisuje TAG z Makefile
           command: make docker_push TAG=${IMAGE}:${CIRCLE_SHA1}
       - run:
           name: Push obrazu z tagiem latest (bez ponownego builda)
+          # -o docker_build = traktuj docker_build jako aktualny, nie uruchamiaj go ponownie
           command: make -o docker_build docker_push
       - run:
           name: Weryfikacja obrazu na Docker Hub
+          # Makefile łączy komendy przez ';', więc nieudany push nie przerywa joba.
+          # Ten krok gwarantuje, że obraz z tagiem SHA naprawdę istnieje.
           command: docker manifest inspect ${IMAGE}:${CIRCLE_SHA1} > /dev/null
 
   deploy:
@@ -37,10 +41,8 @@ jobs:
       IMAGE: docker.io/elisandex/hello-world-printer
     steps:
       - run:
-          name: Debug OIDC
-          command: echo "$CIRCLE_OIDC_TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null; echo
-      - run:
           name: Login do Azure (OIDC, managed identity)
+          # $CIRCLE_OIDC_TOKEN jest wystawiany tylko w jobach z context: (tu: azure)
           command: |
             az login --service-principal \
               -u "$AZURE_CLIENT_ID" \
