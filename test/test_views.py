@@ -24,3 +24,11 @@ class FlaskrTestCase(unittest.TestCase):
                     b'  <msg>Hello World!</msg>\n'
                     b'</greetings>')
         self.assertEqual(expected, rv.data)
+
+    def test_nameset_with_xml_output(self):
+        rv = self.app.get('/?name=Apolonia&output=xml')
+        expected = (b'<greetings>\n'
+                    b'  <name>Apolonia</name>\n'
+                    b'  <msg>Hello World!</msg>\n'
+                    b'</greetings>')
+        self.assertEqual(expected, rv.data)
